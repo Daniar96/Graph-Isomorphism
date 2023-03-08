@@ -1,0 +1,41 @@
+Aim for better than these times (they are slow), e.g., on jupyter notebook: jupyter.utwente.nl. 5x slower is passible (but likely not good enough for the project).
+
+CrefBenchmark1.grl
+Sets of possibly isomorphic graphs
+[0, 2] 
+[1, 3] 
+Time: 10 seconds
+
+CrefBenchmark2.grl
+Sets of possibly isomorphic graphs
+[0, 2, 4] discrete
+[1, 3] discrete
+Time: <1 seconds
+
+CrefBenchmark3.grl
+Sets of possibly isomorphic graphs
+[0, 2, 3] discrete
+[1, 4] discrete
+Time: 2.5 seconds
+
+CrefBenchmark4.grl
+Sets of possibly isomorphic graphs
+[0, 1] discrete
+[2, 3] discrete
+Time: 10 seconds
+
+CrefBenchmark5.grl
+Sets of possibly isomorphic graphs
+[0, 9] 
+[1, 6, 7] 
+[2, 3, 4] 
+[5, 8] 
+Time: <0.1 seconds
+
+CrefBenchmark6.grl
+Sets of possibly isomorphic graphs
+[0, 1] 
+[2, 3, 4] 
+Time: 90 seconds
+
+Total time: 120 seconds

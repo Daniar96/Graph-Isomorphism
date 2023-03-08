@@ -1,0 +1,42 @@
+colorref_largeexample_4_1026.grl
+Sets of possibly isomorphic graphs:
+[0, 1] discrete
+[2, 3] discrete
+
+colorref_largeexample_6_960.grl
+Sets of possibly isomorphic graphs:
+[0, 4] discrete
+[1, 3]
+[2, 5] discrete
+
+colorref_smallexample_2_49.grl
+Sets of possibly isomorphic graphs:
+[0, 1] discrete
+
+colorref_smallexample_4_16.grl
+Sets of possibly isomorphic graphs:
+[0, 1]
+[2, 3] discrete
+
+colorref_smallexample_4_7.grl
+Sets of possibly isomorphic graphs:
+[0, 2]
+[1, 3] discrete
+
+colorref_smallexample_6_15.grl
+Sets of possibly isomorphic graphs:
+[0, 1] discrete
+[2, 3] discrete
+[4, 5]
+
+cref9vert_4_9.grl
+Sets of possibly isomorphic graphs:
+[0, 3] discrete
+[1, 2] discrete
+
+cref9vert3comp_10_27.grl
+Sets of possibly isomorphic graphs:
+[0, 3]
+[1, 8, 9]
+[2, 4, 7]
+[5, 6]
