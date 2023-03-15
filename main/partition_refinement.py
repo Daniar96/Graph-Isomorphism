@@ -22,11 +22,13 @@ def get_graph_list(file_path):
     return graph_list
 
 
+# Creates disjoint graph and colors it
 def create_graph_coloring_list(graph_list):
     vertices = list()
 
     for graph in graph_list:
         vertices.extend(graph.vertices)
+
     this_coloring = Coloring(vertices)
     this_coloring.assign_colors()
     this_coloring.refine_colors()
@@ -69,18 +71,16 @@ if __name__ == '__main__':
             graph_path = input("Type a path to a graph file: ")
             start = time.time()
 
-
             graph = get_graph_list(graph_path)
             print("The graph was loaded")
             create_graph_coloring_list(graph)
             isomorphisms = get_isomorphisms(graph)
             print_isomorphisms(isomorphisms)
             end = time.time()
-            print("It took ", end-start)
+            print("It took ", end - start)
 
 
 
 
     except KeyboardInterrupt:
         print('Interrupted')
-
