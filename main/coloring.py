@@ -7,26 +7,26 @@ class Coloring(object):
         """
         A programmer-friendly representation of the coloring.
         """
-        coloring_String = "Coloring:\n"
-        for color in self.colors.keys():
-            coloring_String += 'Color = {}, #Vertices = {} \n'.format(color, len(self.colors[color]))
-        return coloring_String
+        coloring_string = "Coloring:\n"
+        for color in self.color_to_vertex.keys():
+            coloring_string += 'Color = {}, #Vertices = {} \n'.format(color, len(self.color_to_vertex[color]))
+        return coloring_string
 
     def __init__(self, vertices):
         self.this_iteration_color_change = list()
         self.vertices = vertices
         # Create a new dictionary to hold vertices mapped to colours(#neigbours)
-        self.colors = dict()
-        self.taken_colors = list()
-        self.quick = True
+        self.color_to_vertex = dict()
+        self.taken_colors = set()
+        self.test = [1, 1]
 
     def is_discrete(self):
-        for color in self.colors.keys():
-            if len(self.colors[color]) != 1:
+        for color in self.color_to_vertex.keys():
+            if len(self.color_to_vertex[color]) != 1:
                 return False
         return True
 
-    def assign_colors(self):
+    def assign_initial_colors(self):
         # For every vertex in the graph
         for vertex in self.vertices:
             # Get number of neighbours(color)
@@ -36,25 +36,30 @@ class Coloring(object):
             # If there is no color in the dictionary yet
             if neighbours_num not in self.taken_colors:
                 # Add a list with a vertex
-                self.colors[neighbours_num] = [vertex]
-                self.taken_colors.append(neighbours_num)
+                self.color_to_vertex[neighbours_num] = [vertex]
+                self.taken_colors.add(neighbours_num)
             # If there is already this color in the dictionary
             else:
                 # Add a vertex to list of vertices
-                self.colors[neighbours_num].append(vertex)
+                self.color_to_vertex[neighbours_num].append(vertex)
 
     def refine_colors(self):
         while not self.is_refined():
-            for color in list(self.colors.keys()):
-                if 1 == len(self.colors[color]):
+
+            for color in list(self.color_to_vertex.keys()):
+                if 1 == len(self.color_to_vertex[color]):
                     continue
                 self.taken_colors.remove(color)
-                self.recolor_by_neighbours(self.colors.pop(color), color)
+                self.recolor_by_neighbours(self.color_to_vertex.pop(color))
                 self.execute_color_changes()
 
+    def refine_colors_test(self, test):
+        self.test = test
+        self.refine_colors()
+
     def is_refined(self):
-        for color in self.colors.keys():
-            vertices = self.colors[color]
+        for color in self.color_to_vertex.keys():
+            vertices = self.color_to_vertex[color]
             if len(vertices) == 1:
                 continue
             first_vertex = vertices[0]
@@ -65,12 +70,10 @@ class Coloring(object):
                     return False
         return True
 
-    def recolor_by_neighbours(self, vertices_list, color):
+    def recolor_by_neighbours(self, vertices_list):
         while vertices_list:
-            # Take a vertex
-            vertex = vertices_list[0]
-            # Remove a vertex so it won't be compared to itself
-            vertices_list.remove(vertex)
+            # Take a vertex from a list
+            vertex = vertices_list.pop(0)
             # Create a list of vertices with same neighbours and add this vertex
             same_neighbours_list = [vertex]
             # Get neighbours of this vertex
@@ -83,12 +86,13 @@ class Coloring(object):
                 if Counter(neighbour_colors) == Counter(colors_to_compare):
                     same_neighbours_list.append(vertex_to_compare)
 
-            # Assign new color to all of the vertices with a same color
+            # Assign new color to all the vertices with a same color
             if len(same_neighbours_list) != 1:
-                self.assign_new_color(same_neighbours_list, sum(neighbour_colors))
+                self.assign_new_color(same_neighbours_list)
             vertices_list = [x for x in vertices_list if x not in same_neighbours_list]
 
-    def assign_new_color(self, vertices_list, new_color):
+    def assign_new_color(self, vertices_list):
+        new_color = len(self.color_to_vertex.keys())
 
         while new_color in self.taken_colors:
             new_color += 1
@@ -98,7 +102,7 @@ class Coloring(object):
         # for vertex in vertices_list:
         #     vertex.set_color(new_color)
 
-        self.taken_colors.append(new_color)
+        self.taken_colors.add(new_color)
 
     def execute_color_changes(self):
         if not self.this_iteration_color_change:
@@ -106,7 +110,62 @@ class Coloring(object):
         for change in self.this_iteration_color_change:
             list_to_change = change[0]
             color_to_change = change[1]
-            self.colors[color_to_change] = list_to_change
+            self.color_to_vertex[color_to_change] = list_to_change
             for vertex in list_to_change:
                 vertex.set_color(color_to_change)
         self.this_iteration_color_change = list()
+
+    def get_color_class(self):
+        for color in self.color_to_vertex.keys():
+            if len(self.color_to_vertex[color]) >= 4:
+                return color
+        return -1
+
+    def check_bijection_or_unbalanced(self):
+        """
+        Checks if the coloring is unbalanced or defines a bijection
+        :return: 0 if unbalanced, 1 if bijection, -1 if neither
+        """
+        is_bijection = True
+        for color_class_vertices in self.color_to_vertex.values():
+            if len(color_class_vertices) % 2 == 1:
+                return 0
+            if len(color_class_vertices) != 2:
+                is_bijection = False
+        return 1 if is_bijection else -1
+
+    def reset_color_dict(self):
+        for vertex in self.vertices:
+            if vertex.color not in self.color_to_vertex:
+                self.color_to_vertex[vertex.color] = []
+                self.taken_colors.add(vertex.color)
+            self.color_to_vertex[vertex.color].append(vertex)
+
+    def reset_colors_with_dict(self):
+        for color in self.color_to_vertex.keys():
+            for vertex in self.color_to_vertex[color]:
+                vertex.set_color(color)
+
+    def count_isomorphism(self, previous_x_y):
+        check = self.check_bijection_or_unbalanced()
+        if check != -1:
+            return check
+        color_class = self.get_color_class()
+        x = self.color_to_vertex[color_class][0]
+        y = [vertex for vertex in self.color_to_vertex[color_class][1:] if vertex.graph != x.graph]
+        num = 0
+        for y_vertex in y:
+            this_x_y = previous_x_y + [(x, y_vertex)]
+            new_coloring = Coloring(self.vertices)
+            new_coloring.assign_initial_colors()
+
+            for x_y in this_x_y:
+                x_y_colored_vertices = new_coloring.color_to_vertex.pop(x_y[0].color)
+                new_coloring.color_to_vertex[x_y[0].color] = [vertex for vertex in x_y_colored_vertices if
+                                                              vertex not in x_y]
+                new_coloring.assign_new_color(list(x_y))
+                new_coloring.execute_color_changes()
+            new_coloring.refine_colors()
+            num += new_coloring.count_isomorphism(this_x_y)
+            self.reset_colors_with_dict()
+        return num
