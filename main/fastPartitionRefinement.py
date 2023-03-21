@@ -20,37 +20,43 @@ def initialize(graph):
         vertice.set_color(0)
 
 disjoint_graph, max_degree = setup()
-saved_coloring = None
-last_color = 0
-
-#TODO: iteration over linked list
-def find_Nx(Ci, i):
-    Nx = doublyLinkedList()
-    for vertex in list(Ci.values()):
-        if len(vertex.neighbours) == i:
-            if len(Nx) == 0:
-                Nx.InsertToEmptyList(vertex)
-            else:
-                Nx.InsertToEnd(vertex)
-    return Nx
+new_colr = 0
 
 def partition():
     partition = {}
-    print(disjoint_graph)
     for vertex in disjoint_graph:
         if vertex.get_color() not in partition:
-            partition[vertex.get_color()] = doublyLinkedList()
-            partition[vertex.get_color()].InsertToEnd(vertex)
+            partition[vertex.get_color()] = [vertex]
         else:
-            partition[vertex.get_color()].InsertToEnd(vertex)
+            partition[vertex.get_color()].append(vertex)
     return partition
 
-def refine(C, i):
-    global last_color
-    Nx = find_Nx(C, i)
-    queue = {0}
-    L = set()
-    A = {}
+# def refines(C):
+#     for i in range(1, max_degree):
+#         refine(C, i)
+#     return True
+#
+
+def new_color():
+    return new_colr+1
+def find_Nx(Ci, i):
+    Nx = []
+    for vertex in list(Ci.values()):
+        for v in vertex:
+            if len(v.neighbours) == i:
+                Nx.append(v)
+    return Nx
+
+
+def refine(C, x): # x - degree, aka delta function; C - partition by colors
+    global new_colr
+    L = set()  # store unique colors
+    A = {}  # states with color i in Ci
+    Nx = find_Nx(C, x)
+    Queue = [0]
+
+    # Compute L and A
+    # Works correctly!
     for key, value in C.items():
         A[key] = 0
         for q1 in Nx:
@@ -58,31 +64,50 @@ def refine(C, i):
                 L.add(key)
                 A[key] += 1
 
-    for i in L: #loop though colors
-        if A[i] < len(C[i]): #if there exist nodes with different configuration
-            last_color = last_color+1
-            cur_color = 0
-            if i in queue:
-                cur_color = last_color
-                queue.add(last_color)
-            else:
-                cur_color = min(i, last_color)
-                queue.add(min(i,last_color))
+    # Split color classes
+    #ToDo: find logic behind Queue updates
+    while len(Queue) != 0: #i think it should be deleted
+        curr_color = Queue[0]
+        print(L)
+        for i in L:
+            print(i)
+            if A[i] < len(C[i]):
+                new_colr = new_color()
+                print('new', new_colr)
+                for q in C[i]:
+                    if i in Queue:
+                        curr_color = new_colr
+                    else:
+                        t = min(i, new_colr)
+                        curr_color = t
+                    Queue.append(curr_color)
+                    if curr_color not in C.keys():
+                        C[curr_color] = [q]
+                    else:
+                        C[curr_color].append(q)
+            #The number of tabs might be wrong
+            Queue = list(set(Queue))
+            print(Queue[0])
+            Queue.pop(0)
+            print("queue",Queue)
 
-        for value in C[i]:
+    # Update colors of states
+    for key, value in C.items():
+        for v in value:
             for q1 in Nx:
-                if q1 not in value.neighbours:
-                    q1.set_color(cur_color)
+                if q1 not in v.neighbours:
+                    q1.set_color(curr_color)
+    C = partition()
+    print(C)
 
-        queue.pop(0)
-        C = partition()
-        print(C)
-    return C
 
-def refines(C):
-    for i in range(1, max_degree):
-        refine(C, i)
-    return True
+
+
+
+
+
+
+
 
 C = partition()
-refine(C, 1)
+refine(C, 2)

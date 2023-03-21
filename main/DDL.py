@@ -14,6 +14,12 @@ class doublyLinkedList:
         for node in self:
             res += str(node.item)+' '
         return res
+
+    def __iter__(self):
+        node = self.start_node
+        while node is not None:
+            yield node
+            node = node.next
     # Insert Element to Empty list
     def InsertToEmptyList(self, data):
         if self.start_node is None:
