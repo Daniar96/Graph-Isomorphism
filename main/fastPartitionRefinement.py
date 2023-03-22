@@ -60,6 +60,11 @@ def refine(C, x): # x - degree, aka delta function; C - partition by colors
     while queue:
         Nx = find_Nx(C, x)
         print('NX', Nx)
+
+        if len(Nx) == 0:
+            print(C)
+            return C
+
         # Compute L and A
         # Works correctly!
         for key, value in C.items():
@@ -96,30 +101,21 @@ def refine(C, x): # x - degree, aka delta function; C - partition by colors
                 else:
                     queue.append(min(i, new_colr))
                 print(queue)
-            t = queue.pop(0)  # next color to refine
-            print('t', t)
-            print(queue)
-            print("nC", C)
-            print('qq', queue)
+        t = queue.pop(0)  # next color to refine
+        print('t', t)
+        print(queue)
+        print("nC", C)
+        print('qq', queue)
 
 
         # Update colors of states
         for key, value in C.items():
             for v in value:
                 v.set_color(key)
-        print('k')
+        print('k', queue)
     C = partition()
     print(C)
 
 
-
-
-
-
-
-
-
-
-
 C = partition()
-refine(C, 2)
+refine(C, 3)
