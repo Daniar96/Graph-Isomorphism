@@ -52,53 +52,65 @@ def refine(C, x): # x - degree, aka delta function; C - partition by colors
     global new_colr
     L = set()  # store unique colors
     A = {}  # states with color i in Ci
-    Nx = find_Nx(C, x)
-    Queue = [0]
+    queue = [0]
 
-    # Compute L and A
-    # Works correctly!
-    for key, value in C.items():
-        A[key] = 0
-        for q1 in Nx:
-            if q1 in C[key]:
-                L.add(key)
-                A[key] += 1
 
     # Split color classes
-    #ToDo: find logic behind Queue updates
-    while len(Queue) != 0: #i think it should be deleted
-        curr_color = Queue[0]
+
+    while queue:
+        Nx = find_Nx(C, x)
+        print('NX', Nx)
+        # Compute L and A
+        # Works correctly!
+        for key, value in C.items():
+            A[key] = 0
+            for q1 in Nx:
+                if q1 in C[key]:
+                    L.add(key)
+                    A[key] += 1
+
+
         print(L)
+        print('A', A)
+        print('C', C)
+        # split color class into 2 new classes
         for i in L:
-            print(i)
+            print('color', i)
+            print(len(C[i]))
             if A[i] < len(C[i]):
                 new_colr = new_color()
+                C[new_colr] = []
                 print('new', new_colr)
                 for q in C[i]:
-                    if i in Queue:
-                        curr_color = new_colr
-                    else:
-                        t = min(i, new_colr)
-                        curr_color = t
-                    Queue.append(curr_color)
-                    if curr_color not in C.keys():
-                        C[curr_color] = [q]
-                    else:
-                        C[curr_color].append(q)
-            #The number of tabs might be wrong
-            Queue = list(set(Queue))
-            print(Queue[0])
-            Queue.pop(0)
-            print("queue",Queue)
+                    if q in Nx:
+                        C[i].remove(q)
+                        C[new_colr].append(q)
+                print(len(C[i]), len(C[new_colr]))
+                if len(C[new_colr]) == 0:
+                    del C[new_colr]
+                    continue
 
-    # Update colors of states
-    for key, value in C.items():
-        for v in value:
-            for q1 in Nx:
-                if q1 not in v.neighbours:
-                    q1.set_color(curr_color)
+                if i in queue:
+                    print('test')
+                    queue.append(new_colr)
+                else:
+                    queue.append(min(i, new_colr))
+                print(queue)
+            t = queue.pop(0)  # next color to refine
+            print('t', t)
+            print(queue)
+            print("nC", C)
+            print('qq', queue)
+
+
+        # Update colors of states
+        for key, value in C.items():
+            for v in value:
+                v.set_color(key)
+        print('k')
     C = partition()
     print(C)
+
 
 
 
