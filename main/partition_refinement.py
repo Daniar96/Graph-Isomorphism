@@ -35,6 +35,7 @@ def create_graph_coloring_list(graph_list):
     this_coloring.refine_colors()
 
 
+
 def get_isomorphisms(graph_list):
     all_isomorhisms = list()
     # Convert list to a dict

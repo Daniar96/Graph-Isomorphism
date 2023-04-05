@@ -91,6 +91,7 @@ class Coloring(object):
                 self.assign_new_color(same_neighbours_list)
             vertices_list = [x for x in vertices_list if x not in same_neighbours_list]
 
+
     def assign_new_color(self, vertices_list):
         new_color = len(self.color_to_vertex.keys())
 

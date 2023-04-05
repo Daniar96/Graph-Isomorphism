@@ -3,9 +3,9 @@ from coloring import *
 from partition_refinement import *
 from DDL import *
 
-
+graph_list = []
 def setup():
-    graph_path = 'CRefFriday2023/ColorRefFri1.grl'
+    graph_path = 'Benchmark_instances/CrefBenchmark1.grl'
     graph_list = get_graph_list(graph_path)
     combined_vertices = []
     for graph in graph_list:
@@ -31,11 +31,6 @@ def partition():
             partition[vertex.get_color()].append(vertex)
     return partition
 
-# def refines(C):
-#     for i in range(1, max_degree):
-#         refine(C, i)
-#     return True
-#
 
 def new_color():
     return new_colr+1
@@ -63,7 +58,7 @@ def refine(C, x): # x - degree, aka delta function; C - partition by colors
 
         if len(Nx) == 0:
             print(C)
-            return C
+            return C, False
 
         # Compute L and A
         # Works correctly!
@@ -81,6 +76,7 @@ def refine(C, x): # x - degree, aka delta function; C - partition by colors
         # split color class into 2 new classes
         for i in L:
             print('color', i)
+            print('a',A[i])
             print(len(C[i]))
             if A[i] < len(C[i]):
                 new_colr = new_color()
@@ -115,7 +111,35 @@ def refine(C, x): # x - degree, aka delta function; C - partition by colors
         print('k', queue)
     C = partition()
     print(C)
+    return C, True
+
+# loops through all degree 0<i<=maxdegree
+def refines(C):
+    print(max_degree)
+    for i in range(1, max_degree+1):
+        new_partition, check = refine(C, i)
+        # check whether the partition is stable such that degree existed in Nx
+        if C == new_partition and check == True:
+            print(C)
+            return C
+        else:
+            C = new_partition
+    print(C)
+    return C
+
+#ToDo: split the graph and define isomorphisms
+# def split(partition):
+#     for i in range(len(graph_list)):
+#         name = "graph_"+str(i)
+#         globals()[name] = {}
+#         for key, value in partition.items():
+#             for val in value:
+#                 if val in graph_list[i].vertices():
+#                     globals()[name][key] = [val]
+#         print(graph_1)
+
 
 
 C = partition()
 refine(C, 3)
+refines(C)
