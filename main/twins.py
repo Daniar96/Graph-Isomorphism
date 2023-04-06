@@ -11,9 +11,9 @@ def count_twins(graph):  # it prints true twins and false twins. But about count
     counter = 0
     fact = 1
     known_twins = []
-    true_twins = []
-    false_twins = []
+    set_twins = []
     for vertex1 in vertices:
+        twins = [vertex1.label]
         if vertex1 in known_twins:
             continue
         for vertex2 in vertices:
@@ -27,25 +27,38 @@ def count_twins(graph):  # it prints true twins and false twins. But about count
             if neighbours1 == neighbours2:  # twins
                 counter += 1
                 known_twins.append(vertex2)
-                if vertex1.is_adjacent(vertex2):  # True twins
-                    print(vertex1, "True twins: ", vertex2)
-                    true_twins.append(vertex2)
-            if neighbours1 == neighbours2 and not vertex1.is_adjacent(vertex2):  # False twins
-                print(vertex1, " False twins: ", vertex2)
-                false_twins.append(vertex2)
+                twins.append(vertex2.label)
+
+            #     if vertex1.is_adjacent(vertex2):  # True twins
+            #         print(vertex1.label, "True twins: ", vertex2.label)
+            #         true_twins.append(vertex2.label)
+            # if neighbours1 == neighbours2 and not vertex1.is_adjacent(vertex2):  # False twins
+            #     print(vertex1.label, " False twins: ", vertex2.label)
+            #     false_twins.append(vertex2.label)
         if counter > 0:
+            set_twins.append(twins)
             for i in range(1, counter + 2):
                 fact = fact * i
             twins_multiplier = twins_multiplier + fact
             fact = 1
         counter = 0
+    print(set_twins)
+    return twins_multiplier
 
 
-g = Graph(False, 4)
+g = Graph(False, 7)
 g.add_edge(Edge(g.vertices[0], g.vertices[1]))
 g.add_edge(Edge(g.vertices[0], g.vertices[2]))
-g.add_edge(Edge(g.vertices[1], g.vertices[3]))
-g.add_edge(Edge(g.vertices[2], g.vertices[3]))
+g.add_edge(Edge(g.vertices[0], g.vertices[3]))
+g.add_edge(Edge(g.vertices[0], g.vertices[4]))
+g.add_edge(Edge(g.vertices[1], g.vertices[5]))
+g.add_edge(Edge(g.vertices[2], g.vertices[5]))
+g.add_edge(Edge(g.vertices[3], g.vertices[5]))
+g.add_edge(Edge(g.vertices[4], g.vertices[5]))
+g.add_edge(Edge(g.vertices[1], g.vertices[6]))
+g.add_edge(Edge(g.vertices[2], g.vertices[6]))
+g.add_edge(Edge(g.vertices[3], g.vertices[6]))
+g.add_edge(Edge(g.vertices[4], g.vertices[6]))
 """g.add_edge(Edge(g.vertices[0], g.vertices[1]))
 g.add_edge(Edge(g.vertices[0], g.vertices[2]))
 g.add_edge(Edge(g.vertices[0], g.vertices[3]))
@@ -60,4 +73,4 @@ g.add_edge(Edge(g.vertices[5], g.vertices[4]))"""
 
 if __name__ == '__main__':
     graph = g
-    count_twins(graph)
+    print(count_twins(graph))
