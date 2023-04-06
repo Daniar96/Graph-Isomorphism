@@ -5,6 +5,8 @@ from DDL import *
 
 graph_list = []
 queue = [0]
+leftover = []
+
 def setup():
     global graph_list
     graph_path = 'Benchmark_instances/CrefBenchmark1.grl'
@@ -55,65 +57,59 @@ def find_Nx(Ci, i):
 
 def refine(C, x): # x - degree, aka delta function; C - partition by colors
     global new_colr
+    global leftover
 
     L = set()  # store unique colors
     A = {}  # states with color i in Ci
-    queue = [0]
-
+    global queue
 
     # Split color classes
+    Nx = find_Nx(C, x)
 
-    while queue:
-        print('degree: ', x)
+    if len(Nx) == 0:
+        # new_colr=new_color()
+        return C, False
 
-        Nx = find_Nx(C, x)
+    print('NX', Nx)
+    print('queue', queue)
+    print('degree: ', x)
 
-
-        if len(Nx) == 0:
-            return C, False
-
-        print('NX', Nx)
-        print('queue', queue)
-
-
-        # Compute L and A
-        # Works correctly!
-        for key, value in C.items():
-            A[key] = 0
-            for q1 in Nx:
-                if q1 in C[key]:
-                    L.add(key)
-                    A[key] += 1
+    # Compute L and A
+    # Works correctly!
+    for key, value in C.items():
+        A[key] = 0
+        for q1 in Nx:
+            if q1 in C[key]:
+                L.add(key)
+                A[key] += 1
+    print('l', L)
+    L = list(filter(lambda k: k not in leftover, L))
 
 
-        print('l',L)
-        print('A', A)
-        print('C', C)
-        # split color class into 2 new classes
-        for i in L:
-            print('len:', len(C[i]))
-            print('color', i)
-            if A[i] < len(C[i]):
-                new_colr = new_color()
-                C[new_colr] = []
-                print('new', new_colr)
-                for q in C[i]:
-                    if q in Nx:
-                        C[i].remove(q)
-                        C[new_colr].append(q)
-                print(len(C[i]), len(C[new_colr]))
-                if len(C[new_colr]) == 0:
-                    del C[new_colr]
-                    continue
+    print('l',L)
+    print('A', A)
+    print('C', C)
+    # split color class into 2 new classes
+    for i in L: # i dont need L
+        print('len:', len(C[i]))
+        print('color', i)
+        if A[i] <= len(C[i]):
+            new_colr = new_color()
+            C[new_colr] = []
+            print('new', new_colr)
+            for q in C[i]:
+                if q in Nx:
+                    C[i].remove(q)
+                    C[new_colr].append(q)
+            print(len(C[i]), len(C[new_colr]))
+            if len(C[new_colr]) == 0:
+                del C[new_colr]
+                continue
 
-                if i in queue:
-                    queue.append(new_colr)
-                else:
-                    queue.append(min(i, new_colr))
-        t = queue.pop(0)  # next color to refine
-        print('t', t)
-        print('qq', queue)
-
+            if i in queue:
+                queue.append(new_colr)
+            else:
+                queue.append(min(i, new_colr))
 
         # Update colors of states
         for key, value in C.items():
@@ -121,32 +117,30 @@ def refine(C, x): # x - degree, aka delta function; C - partition by colors
                 v.set_color(key)
     C = partition()
     print(C)
+    print('queueuu', queue)
 
     return C, True
 
-# loops through all degree 0<i<=maxdegree
 def refines(C):
-    for i in range(1, max_degree+1):
-        new_partition, check = refine(C, i)
-        # check whether the partition is stable such that degree existed in Nx
-        # if C == new_partition and check == True:
-        #     print(C)
-        #     return C
-        # else:
-        C = new_partition
+    global leftover
+    #TODO: add loop over queue until its empty
+    while queue:
+        for i in range(1, max_degree+1):
+            new_partition, check = refine(C, i)
+            #TODO: check whether partition terminates correctly
+           # check whether the partition is stable such that degree existed in Nx
+           #  if C == new_partition and check == True:
+           #      print(C)
+           #      return C
+           #  else:
+            C = new_partition
+        t = queue.pop(0)
+        leftover.append(t)
+        print('leftover', leftover)
+        print('pop', queue)
+
     print(C)
     return C
-
-#ToDo: split the graph and define isomorphisms
-# def split(partition):
-#     for i in range(len(graph_list)):
-#         name = "graph_"+str(i)
-#         globals()[name] = {}
-#         for key, value in partition.items():
-#             for val in value:
-#                 if val in graph_list[i].vertices():
-#                     globals()[name][key] = [val]
-#         print(graph_1)
 
 def split():
     for i in range(len(graph_list)):
