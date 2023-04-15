@@ -1,0 +1,54 @@
+from collections import deque
+
+def color_refinement(graphs):
+    # Initialization
+    color_classes = []
+    queue = deque()
+    colors = {}
+
+    for i, graph in enumerate(graphs):
+        color_classes.append({v: i for v in graph})
+        queue.append(i)
+
+    # Refinement loop
+    while queue:
+        c = queue.popleft()
+        for x in set.union(*[set(graph) for graph in graphs]):
+            l = {}
+            a = {}
+            for q in color_classes[c]:
+                for q_prime in [v for v in N_xx(q, x, graphs) if v not in color_classes[c]]:
+                    if q_prime not in l:
+                        l[color_classes[c][delta(q_prime, x, graphs)]] = set()
+                        a[color_classes[c][delta(q_prime, x, graphs)]] = 0
+                    l[color_classes[c][delta(q_prime, x, graphs)]].add(q_prime)
+                    a[color_classes[c][delta(q_prime, x, graphs)]] += 1
+            for i in l:
+                if a[i] < len(color_classes[c][i]):
+                    new_color = str(len(colors))
+                    colors[new_color] = set()
+                    for q_prime in l[i]:
+                        color_classes[c][q_prime] = new_color
+                        colors[new_color].add(q_prime)
+                    queue.append(new_color)
+
+    # Return stable coloring
+    return [set(color_classes[i].values()) for i in range(len(graphs))]
+
+
+def delta(q, x, graphs):
+    for graph in graphs:
+        if q in graph:
+            for e in graph[q]:
+                if e[1] == x:
+                    return e[0]
+
+
+def N_xx(q, x, graphs):
+    n_xx = set()
+    for graph in graphs:
+        if q in graph:
+            for e in graph[q]:
+                if e[1] == x:
+                    n_xx.add(e[0])
+    return n_xx

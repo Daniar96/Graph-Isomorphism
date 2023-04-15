@@ -1,77 +1,90 @@
-# Initialise the Node
 class Node:
-    def __init__(self, data):
-        self.item = data
-        self.next = None
+    def __init__(self, data=None):
+        self.data = data
         self.prev = None
-# Class for doubly Linked List
-class doublyLinkedList:
-    def __init__(self):
-        self.start_node = None
+        self.next = None
 
-    def __repr__(self):
-        res = ''
-        for node in self:
-            res += str(node.item)+' '
-        return res
+class DoublyLinkedList:
+    def __init__(self):
+        self.head = None
+        self.tail = None
+
+    def append(self, data):
+        new_node = Node(data)
+        if self.head is None:
+            self.head = new_node
+            self.tail = new_node
+        else:
+            new_node.prev = self.tail
+            self.tail.next = new_node
+            self.tail = new_node
+
+    def delete_start(self):
+        if self.head is None:
+            return None
+        else:
+            data = self.head.data
+            if self.head == self.tail:
+                self.head = None
+                self.tail = None
+            else:
+                self.head = self.head.next
+                self.head.prev = None
+            return data
+
+
+    def delete_end(self):
+        if self.head is None:
+            return None
+        else:
+            data = self.tail.data
+            if self.head == self.tail:
+                self.head = None
+                self.tail = None
+            else:
+                self.tail = self.tail.prev
+                self.tail.next = None
+            return data
+
+    def delete_value(self, value):
+        current_node = self.head
+        while current_node is not None and current_node.data != value:
+            current_node = current_node.next
+        if current_node is None:
+            return False
+        if current_node.prev is None:
+            self.head = current_node.next
+        else:
+            current_node.prev.next = current_node.next
+        if current_node.next is None:
+            self.tail = current_node.prev
+        else:
+            current_node.next.prev = current_node.prev
+        return True
+    def size(self):
+        count = 0
+        current_node = self.head
+        while current_node:
+            count += 1
+            current_node = current_node.next
+        return count
+
+    def get(self, index):
+        if index < 0 or index >= self.size():
+            raise IndexError("Index out of range")
+        current_node = self.head
+        for i in range(index):
+            current_node = current_node.next
+        return current_node.data
 
     def __iter__(self):
-        node = self.start_node
-        while node is not None:
-            yield node
-            node = node.next
-    # Insert Element to Empty list
-    def InsertToEmptyList(self, data):
-        if self.start_node is None:
-            new_node = Node(data)
-            self.start_node = new_node
-        else:
-            print("The list is empty")
-    # Insert element at the end
-    def InsertToEnd(self, data):
-        # Check if the list is empty
-        if self.start_node is None:
-            new_node = Node(data)
-            self.start_node = new_node
-            return
-        n = self.start_node
-        # Iterate till the next reaches NULL
-        while n.next is not None:
-            n = n.next
-        new_node = Node(data)
-        n.next = new_node
-        new_node.prev = n
-    # Delete the elements from the start
-    def DeleteAtStart(self):
-        if self.start_node is None:
-            print("The Linked list is empty, no element to delete")
-            return
-        if self.start_node.next is None:
-            self.start_node = None
-            return
-        self.start_node = self.start_node.next
-        self.start_prev = None;
-    # Delete the elements from the end
-    def delete_at_end(self):
-        # Check if the List is empty
-        if self.start_node is None:
-            print("The Linked list is empty, no element to delete")
-            return
-        if self.start_node.next is None:
-            self.start_node = None
-            return
-        n = self.start_node
-        while n.next is not None:
-            n = n.next
-        n.prev.next = None
-    # Traversing and Displaying each element of the list
-    def Display(self):
-        if self.start_node is None:
-            print("The list is empty")
-            return
-        else:
-            n = self.start_node
-            while n is not None:
-                print(n.item)
-                n = n.next
-        print("\n")
+        current_node = self.head
+        while current_node:
+            yield current_node.data
+            current_node = current_node.next
+
+def convert_to_dllist(lst):
+    dllist = DoublyLinkedList()
+    for item in lst:
+        dllist.append(item)
+    return dllist
