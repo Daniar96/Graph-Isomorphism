@@ -34,6 +34,12 @@ def count_automorphism(graph, graph2):
     this_coloring.refine_colors()
     return this_coloring.count_isomorphism([])
 
+def find_automorphism(graph, graph2):
+    this_coloring = Coloring(graph.vertices + graph2.vertices)
+    this_coloring.assign_initial_colors()
+    this_coloring.refine_colors()
+    return this_coloring.find_isomorphism([])
+
 
 def get_isomorphisms(graph_list):
     all_isomorphisms = list()
@@ -50,6 +56,30 @@ def get_isomorphisms(graph_list):
             # If their neighbours are the same, then their colors could be combined
             automorphism_count = count_automorphism(graph, (graph_dict[new_graph_index]))
             if automorphism_count != 0:
+                isomorphism_properties[0].append(new_graph_index)
+                isomorphism_properties[1] = automorphism_count
+        if len(isomorphism_properties[0]) > 1:
+            all_isomorphisms.append(isomorphism_properties)
+            for proved_isomorphism in isomorphism_properties[0]:
+                if proved_isomorphism != index:
+                    graph_dict.pop(proved_isomorphism)
+    return all_isomorphisms
+
+def get_first_isomorphism(graph_list):
+    all_isomorphisms = list()
+    # Convert list to a dict
+    graph_dict = {i: graph_list[i] for i in range(0, len(graph_list))}
+    while graph_dict:
+        isomorphism_properties = [list(), int]
+        # Take a coloring and remove it, so it won't be compared to itself
+        index, graph = graph_dict.popitem()
+        isomorphism_properties[0].append(index)
+        isomorphism_properties[1] = 0
+        # For every graph in a list except the graph that was removed
+        for new_graph_index in graph_dict.keys():
+            # If their neighbours are the same, then their colors could be combined
+            automorphism_count = count_automorphism(graph, (graph_dict[new_graph_index]))
+            if automorphism_count:
                 isomorphism_properties[0].append(new_graph_index)
                 isomorphism_properties[1] = automorphism_count
         if len(isomorphism_properties[0]) > 1:
@@ -77,7 +107,8 @@ def handle_input(path):
         sub_start = time.time()
 
         graph_list = file_to_graph[file]
-        isomorphisms = get_isomorphisms(graph_list)
+        #isomorphisms = get_isomorphisms(graph_list)
+        isomorphisms = get_first_isomorphism(graph_list)
         sub_end = time.time()
         print("It took {:.2f} seconds to finish graph {}".format(sub_end - sub_start, file))
         print_isomorphisms(isomorphisms)

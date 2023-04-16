@@ -7,10 +7,12 @@ class Node:
     def __repr__(self):
         return str(self.data)
 
-class DoublyLinkedList:
+
+class DoublyLinkedList_Short:
     def __init__(self):
         self.head = None
         self.tail = None
+
     def __repr__(self):
         values = []
         current = self.head
@@ -18,8 +20,17 @@ class DoublyLinkedList:
             values.append(current.data)
             current = current.next
         return f"DLL({values})"
+
     def __len__(self):
         return self.size()
+
+    def size(self):
+        count = 0
+        current_node = self.head
+        while current_node:
+            count += 1
+            current_node = current_node.next
+        return count
 
     def append(self, data):
         new_node = Node(data)
@@ -30,41 +41,6 @@ class DoublyLinkedList:
             new_node.prev = self.tail
             self.tail.next = new_node
             self.tail = new_node
-
-    def delete_start(self):
-        if self.head is None:
-            return None
-        else:
-            data = self.head.data
-            if self.head == self.tail:
-                self.head = None
-                self.tail = None
-            else:
-                self.head = self.head.next
-                self.head.prev = None
-            return data
-
-
-    def delete_end(self):
-        if self.head is None:
-            return None
-        else:
-            data = self.tail.data
-            if self.head == self.tail:
-                self.head = None
-                self.tail = None
-            else:
-                self.tail = self.tail.prev
-                self.tail.next = None
-            return data
-
-    def contains(self, data):
-        current = self.head
-        while current is not None:
-            if current.data == data:
-                return True
-            current = current.next
-        return False
 
     def append_if_lacks(self, data):
         new_node = Node(data)
@@ -90,16 +66,6 @@ class DoublyLinkedList:
             current = current.next
         return count
 
-    def merge(self, other):
-        if self.head is None:
-            self.head = other.head
-        elif other.head is not None:
-            current = self.head
-            while current.next is not None:
-                current = current.next
-            current.next = other.head
-            other.head.prev = current
-
     def delete_value(self, value):
         current_node = self.head
         while current_node is not None and current_node.data != value:
@@ -115,13 +81,16 @@ class DoublyLinkedList:
         else:
             current_node.next.prev = current_node.prev
         return True
-    def size(self):
-        count = 0
-        current_node = self.head
-        while current_node:
-            count += 1
-            current_node = current_node.next
-        return count
+
+    def merge(self, other):
+        if self.head is None:
+            self.head = other.head
+        elif other.head is not None:
+            current = self.head
+            while current.next is not None:
+                current = current.next
+            current.next = other.head
+            other.head.prev = current
 
     def is_empty(self):
         return self.head is None
@@ -160,9 +129,3 @@ class DoublyLinkedList:
         while current_node:
             yield current_node.data
             current_node = current_node.next
-
-def convert_to_dllist(lst):
-    dllist = DoublyLinkedList()
-    for item in lst:
-        dllist.append(item)
-    return dllist

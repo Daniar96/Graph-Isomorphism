@@ -1,9 +1,9 @@
 from collections import Counter
 
-from main.DDL import DoublyLinkedList
+from main.DDL_short import DoublyLinkedList_Short
 
 
-class Coloring(object):
+class Coloring_Fast(object):
 
     def __repr__(self):
         """
@@ -15,12 +15,17 @@ class Coloring(object):
         return coloring_string
 
     def __init__(self, vertices):
-        self.this_iteration_color_change = DoublyLinkedList()
         self.vertices = vertices
         # Create a new dictionary to hold vertices mapped to colours(#neigbours)
         self.color_to_vertex = dict()
-        self.taken_colors = set()
-        self.test = [1, 1]
+        self.ref_queue = DoublyLinkedList_Short()
+        self.iter = 0
+
+    def __len__(self):
+        count = 0
+        for sublist in self.color_to_vertex.values():
+            count += len(sublist)
+        return count
 
     def is_discrete(self):
         for color in self.color_to_vertex.keys():
@@ -36,86 +41,94 @@ class Coloring(object):
             # Set number of neighbours as a color for a vertex
             vertex.set_color(neighbours_num)
             # If there is no color in the dictionary yet
-            if neighbours_num not in self.taken_colors:
+            if neighbours_num not in self.color_to_vertex.keys():
                 # Add a list with a vertex
-                self.color_to_vertex[neighbours_num] = [vertex]
-                self.taken_colors.add(neighbours_num)
+                self.color_to_vertex[neighbours_num] = [DoublyLinkedList_Short(), True]
+                self.ref_queue.append(vertex.color)
             # If there is already this color in the dictionary
-            else:
-                # Add a vertex to list of vertices
-                self.color_to_vertex[neighbours_num].append(vertex)
+            # Add a vertex to list of vertices
+            self.color_to_vertex[neighbours_num][0].append(vertex)
+            vertex.change_partition(self.color_to_vertex[neighbours_num][0])
+        return
 
     def refine_colors(self):
-        while not self.is_refined():
+        while self.ref_queue.head is not None:
+            color = self.ref_queue.get_and_remove(0)
+            self.iter += 1
 
-            for color in list(self.color_to_vertex.keys()):
-                if 1 == len(self.color_to_vertex[color]):
-                    continue
-                self.taken_colors.remove(color)
-                self.recolor_by_neighbours(self.color_to_vertex.pop(color))
-                self.execute_color_changes()
+            self.color_to_vertex[color][1] = False
+            neighbours = set(
+                [neighbour for vertex in self.color_to_vertex[color][0] for neighbour in vertex.neighbours])
 
-    def refine_colors_test(self, test):
-        self.test = test
-        self.refine_colors()
-
-    def is_refined(self):
-        for color in self.color_to_vertex.keys():
-            vertices = self.color_to_vertex[color]
-            if len(vertices) == 1:
+            # A list L of all colors i such that Ci contains vertices that have neighbours in C(color) mapped to
+            # The number A[i] of such states in Ci
+            color_counts = {vertex.color: sum(1 for other_vertex in neighbours if other_vertex.color == vertex.color)
+                            for vertex in neighbours}
+            if len(color_counts.keys()) < 2:
                 continue
-            first_vertex = vertices[0]
-            neighbour_colors = [neighbour.get_color() for neighbour in first_vertex.neighbours]
-            for vertex in vertices:
-                vertex_colors = [neighbour.get_color() for neighbour in vertex.neighbours]
-                if Counter(vertex_colors) != Counter(neighbour_colors):
-                    return False
-        return True
 
-    def recolor_by_neighbours(self, vertices_list):
-        while vertices_list:
-            # Take a vertex from a list
-            vertex = vertices_list.pop(0)
-            # Create a list of vertices with same neighbours and add this vertex
-            same_neighbours_list = [vertex]
-            # Get neighbours of this vertex
-            neighbour_colors = [vertex.color for vertex in vertex.neighbours]
-            # For every vertex in a list except the vertex that was removed
-            for vertex_to_compare in vertices_list:
-                colors_to_compare = [vertex_to_compare.color for vertex_to_compare in
-                                     vertex_to_compare.neighbours]
-                # If their neighbours are the same, then their colors could be combined
-                if Counter(neighbour_colors) == Counter(colors_to_compare):
-                    same_neighbours_list.append(vertex_to_compare)
+            to_recolor = self.split_colors(color_counts, color)
+            self.execute_color_changes(to_recolor)
+        print("Done")
+        return
 
-            # Assign new color to all the vertices with a same color
-            if len(same_neighbours_list) != 1:
-                self.assign_new_color(same_neighbours_list)
-            vertices_list = [x for x in vertices_list if x not in same_neighbours_list]
+    def split_colors(self, L, main_c):
+        to_recolor = {}
+        # For each i ∈ L:
+        for color in L.keys():
+            Ci = self.color_to_vertex[color][0]
+            # Decide whether Ci should split up(whether A[i] < | Ci |)
+            if not L[color] < Ci.size():
+                continue
+            # If so, choose a new color l, and update Queue by adding i or l.
+            leftover = DoublyLinkedList_Short()
+            color_classes = 2
+            split_classes = {}
+            neighbours_in_C_num = int()
+            for vertex in Ci:
+                neighbours_in_C_num = [neighbour.color for neighbour in vertex.neighbours].count(main_c)
+                if neighbours_in_C_num not in split_classes.keys():
+                    if color_classes == 0:
+                        leftover.append(vertex)
+                    color_classes -= 1
+                    split_classes[neighbours_in_C_num] = DoublyLinkedList_Short()
+                    split_classes[neighbours_in_C_num].append(vertex)
+                else:
+                    split_classes[neighbours_in_C_num].append(vertex)
+            split_classes[neighbours_in_C_num].merge(leftover)
+            if len(split_classes.values()) == 2:
+                to_recolor[color] = tuple(split_classes.values())
 
-    def assign_new_color(self, vertices_list):
+        return to_recolor
+
+    def execute_color_changes(self, to_recolor):
+        for color_i in to_recolor.keys():
+            put_both_in_q = self.color_to_vertex[color_i][1]
+            partition = sorted(to_recolor[color_i], key=lambda x: x.size())
+            i_list, l_list = partition[0], partition[1]
+            color_l = self.get_new_color()
+            self.ref_queue.append(color_l)
+            if put_both_in_q:
+                self.ref_queue.append(color_i)
+            self.change_color(color_i, i_list, put_both_in_q)
+            self.change_color(color_l, l_list, True)
+
+    def change_color(self, new_color, vertex_list, in_queue):
+        new_partition = DoublyLinkedList_Short()
+        self.color_to_vertex[new_color] = [new_partition, in_queue]
+        for vertex in vertex_list:
+            vertex.partition.delete_value(vertex)
+            vertex.partition = new_partition
+            vertex.set_color(new_color)
+            new_partition.append(vertex)
+
+    def get_new_color(self):
+
         new_color = len(self.color_to_vertex.keys())
-
-        while new_color in self.taken_colors:
+        while new_color in self.color_to_vertex.keys():
             new_color += 1
-        self.this_iteration_color_change.append((vertices_list, new_color))
 
-        # self.colors[new_color] = vertices_list
-        # for vertex in vertices_list:
-        #     vertex.set_color(new_color)
-
-        self.taken_colors.add(new_color)
-
-    def execute_color_changes(self):
-        if not self.this_iteration_color_change:
-            return
-        for change in self.this_iteration_color_change:
-            list_to_change = change[0]
-            color_to_change = change[1]
-            self.color_to_vertex[color_to_change] = list_to_change
-            for vertex in list_to_change:
-                vertex.set_color(color_to_change)
-        self.this_iteration_color_change = list()
+        return new_color
 
     def get_color_class(self):
         for color in self.color_to_vertex.keys():
@@ -156,7 +169,7 @@ class Coloring(object):
         num = 0
         for y_vertex in y:
             this_x_y = previous_x_y + [(x, y_vertex)]
-            new_coloring = Coloring(self.vertices)
+            new_coloring = Coloring_Fast(self.vertices)
             new_coloring.assign_initial_colors()
 
             for x_y in this_x_y:
@@ -184,8 +197,8 @@ class Coloring(object):
                         gr_list2.append(vertex)
             gr_list = sorted(gr_list, key=lambda vertex: vertex.label)
             gr_list2 = sorted(gr_list2, key=lambda vertex: vertex.label)
-            #print(gr_list)
-            #print(gr_list2)
+            print(gr_list)
+            print(gr_list2)
             return True
         elif check == 0:
             return False
@@ -197,7 +210,7 @@ class Coloring(object):
 
         for y_vertex in y:
             this_x_y = previous_x_y + [(x, y_vertex)]
-            new_coloring = Coloring(self.vertices)
+            new_coloring = Coloring_Fast(self.vertices)
             new_coloring.assign_initial_colors()
 
             for x_y in this_x_y:
@@ -211,4 +224,3 @@ class Coloring(object):
                 return True
             self.reset_colors_with_dict()
         return False
-

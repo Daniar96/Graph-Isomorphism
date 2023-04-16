@@ -6,6 +6,8 @@ This is a module for working with directed and undirected multigraphs.
 
 from typing import List, Union, Set
 
+from main.DDL import DoublyLinkedList
+
 
 class GraphError(Exception):
     """
@@ -28,7 +30,6 @@ class Vertex(object):
     except for `__str__`.
     """
 
-
     def __init__(self, graph: "Graph", label=None):
         """
         Creates a vertex, part of `graph`, with optional label `label`.
@@ -46,22 +47,27 @@ class Vertex(object):
         self.label = label
         self._incidence = {}
         self.color = 0
+        self.partition = DoublyLinkedList()
 
     def __repr__(self):
         """
         A programmer-friendly representation of the vertex.
         :return: The string to approximate the constructor arguments of the `Vertex'
         """
-        default_repr = 'Vertex(label={}, #incident={})'.format(self.label, len(self._incidence))
-        only_color_str = str(self.color)
-        return only_color_str
+        # default_repr = 'Vertex(label={}, #incident={})'.format(self.label, len(self._incidence))
+        graph_repr = 'color={}, label={})'.format(self.color, self.label)
+        # only_color_str = str(self.color)
+        return graph_repr
 
     def __str__(self) -> str:
         """
         A user-friendly representation of the vertex, that is, its label.
         :return: The string representation of the label.
         """
-        return str(self.color)
+        return str(self.label)
+
+    def change_partition(self, partition):
+        self.partition = partition
 
     def is_adjacent(self, other: "Vertex") -> bool:
         """
@@ -229,6 +235,10 @@ class Graph(object):
         for i in range(n):
             self.add_vertex(Vertex(self))
 
+    def draw(self):
+        for edge in self.edges:
+            print(edge)
+
     def is_isomorphism(self, other) -> bool:
         if not isinstance(other, Graph):
             return False
@@ -237,7 +247,7 @@ class Graph(object):
 
         checked_vertices = list()
         for vertex in self.vertices:
-            if not other.get_vertex(vertex.color,vertex.neighbours, other_vertices):
+            if not other.get_vertex(vertex.color, vertex.neighbours, other_vertices):
                 return False
 
         return True
@@ -283,8 +293,6 @@ class Graph(object):
         :return: Whether the graph is simple
         """
         return self._simple
-
-
 
     def is_discrete(self):
         colors = list()
