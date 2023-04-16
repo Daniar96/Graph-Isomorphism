@@ -55,16 +55,17 @@ class Vertex(object):
         :return: The string to approximate the constructor arguments of the `Vertex'
         """
         # default_repr = 'Vertex(label={}, #incident={})'.format(self.label, len(self._incidence))
-        graph_repr = 'color={}, label={})'.format(self.color, self.label)
+        # graph_repr = 'color={}, label={})'.format(self.color, self.label)
         # only_color_str = str(self.color)
-        return graph_repr
+        return str([vertex.color for vertex in self.neighbours])
 
     def __str__(self) -> str:
         """
         A user-friendly representation of the vertex, that is, its label.
         :return: The string representation of the label.
         """
-        return str(self.label)
+       # str(self.label)
+        return str([vertex.color for vertex in self.neighbours])
 
     def change_partition(self, partition):
         self.partition = partition

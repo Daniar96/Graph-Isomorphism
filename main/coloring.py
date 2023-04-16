@@ -21,6 +21,7 @@ class Coloring(object):
         self.color_to_vertex = dict()
         self.taken_colors = set()
         self.test = [1, 1]
+        self.counter = 2
 
     def is_discrete(self):
         for color in self.color_to_vertex.keys():
@@ -60,6 +61,7 @@ class Coloring(object):
         self.refine_colors()
 
     def is_refined(self):
+
         for color in self.color_to_vertex.keys():
             vertices = self.color_to_vertex[color]
             if len(vertices) == 1:
@@ -84,13 +86,15 @@ class Coloring(object):
             for vertex_to_compare in vertices_list:
                 colors_to_compare = [vertex_to_compare.color for vertex_to_compare in
                                      vertex_to_compare.neighbours]
+
                 # If their neighbours are the same, then their colors could be combined
                 if Counter(neighbour_colors) == Counter(colors_to_compare):
                     same_neighbours_list.append(vertex_to_compare)
 
             # Assign new color to all the vertices with a same color
-            if len(same_neighbours_list) != 1:
+            if len(same_neighbours_list) != 0:
                 self.assign_new_color(same_neighbours_list)
+
             vertices_list = [x for x in vertices_list if x not in same_neighbours_list]
 
     def assign_new_color(self, vertices_list):
@@ -109,13 +113,15 @@ class Coloring(object):
     def execute_color_changes(self):
         if not self.this_iteration_color_change:
             return
+
         for change in self.this_iteration_color_change:
             list_to_change = change[0]
             color_to_change = change[1]
             self.color_to_vertex[color_to_change] = list_to_change
             for vertex in list_to_change:
                 vertex.set_color(color_to_change)
-        self.this_iteration_color_change = list()
+
+        self.this_iteration_color_change = DoublyLinkedList()
 
     def get_color_class(self):
         for color in self.color_to_vertex.keys():
@@ -165,7 +171,9 @@ class Coloring(object):
                                                               vertex not in x_y]
                 new_coloring.assign_new_color(list(x_y))
                 new_coloring.execute_color_changes()
+
             new_coloring.refine_colors()
+
             num += new_coloring.count_isomorphism(this_x_y)
             self.reset_colors_with_dict()
         return num
@@ -184,8 +192,8 @@ class Coloring(object):
                         gr_list2.append(vertex)
             gr_list = sorted(gr_list, key=lambda vertex: vertex.label)
             gr_list2 = sorted(gr_list2, key=lambda vertex: vertex.label)
-            #print(gr_list)
-            #print(gr_list2)
+            # print(gr_list)
+            # print(gr_list2)
             return True
         elif check == 0:
             return False
@@ -211,4 +219,3 @@ class Coloring(object):
                 return True
             self.reset_colors_with_dict()
         return False
-

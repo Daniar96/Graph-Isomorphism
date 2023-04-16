@@ -34,6 +34,7 @@ def count_automorphism(graph, graph2):
     this_coloring.refine_colors()
     return this_coloring.count_isomorphism([])
 
+
 def find_automorphism(graph, graph2):
     this_coloring = Coloring(graph.vertices + graph2.vertices)
     this_coloring.assign_initial_colors()
@@ -41,7 +42,7 @@ def find_automorphism(graph, graph2):
     return this_coloring.find_isomorphism([])
 
 
-def get_isomorphisms(graph_list):
+def count_isomorphisms(graph_list):
     all_isomorphisms = list()
     # Convert list to a dict
     graph_dict = {i: graph_list[i] for i in range(0, len(graph_list))}
@@ -65,6 +66,7 @@ def get_isomorphisms(graph_list):
                     graph_dict.pop(proved_isomorphism)
     return all_isomorphisms
 
+
 def get_first_isomorphism(graph_list):
     all_isomorphisms = list()
     # Convert list to a dict
@@ -78,7 +80,7 @@ def get_first_isomorphism(graph_list):
         # For every graph in a list except the graph that was removed
         for new_graph_index in graph_dict.keys():
             # If their neighbours are the same, then their colors could be combined
-            automorphism_count = count_automorphism(graph, (graph_dict[new_graph_index]))
+            automorphism_count = find_automorphism(graph, (graph_dict[new_graph_index]))
             if automorphism_count:
                 isomorphism_properties[0].append(new_graph_index)
                 isomorphism_properties[1] = automorphism_count
@@ -105,10 +107,11 @@ def handle_input(path):
 
     for file in file_to_graph:
         sub_start = time.time()
-
         graph_list = file_to_graph[file]
-        #isomorphisms = get_isomorphisms(graph_list)
-        isomorphisms = get_first_isomorphism(graph_list)
+        if "Aut" in file:
+            isomorphisms = count_isomorphisms(graph_list)
+        else:
+            isomorphisms = get_first_isomorphism(graph_list)
         sub_end = time.time()
         print("It took {:.2f} seconds to finish graph {}".format(sub_end - sub_start, file))
         print_isomorphisms(isomorphisms)
