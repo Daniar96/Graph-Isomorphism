@@ -1,3 +1,4 @@
+from copy import deepcopy
 import os
 import sys
 import time
@@ -28,8 +29,8 @@ def get_graph_list(file_path):
     return graph_list
 
 
-def count_automorphism(graph, graph2):
-    this_coloring = Coloring(graph.vertices + graph2.vertices)
+def count_automorphism(graph):
+    this_coloring = Coloring(graph.vertices + deepcopy(graph.vertices))
     this_coloring.assign_initial_colors()
     this_coloring.refine_colors()
     return this_coloring.count_isomorphism([])
@@ -51,15 +52,14 @@ def count_isomorphisms(graph_list):
         # Take a coloring and remove it, so it won't be compared to itself
         index, graph = graph_dict.popitem()
         isomorphism_properties[0].append(index)
-        isomorphism_properties[1] = 0
+        isomorphism_properties[1] = count_automorphism(graph)
         # For every graph in a list except the graph that was removed
         for new_graph_index in graph_dict.keys():
             # If their neighbours are the same, then their colors could be combined
-            automorphism_count = count_automorphism(graph, (graph_dict[new_graph_index]))
+            automorphism_count = find_automorphism(graph, (graph_dict[new_graph_index]))
             if automorphism_count != 0:
                 isomorphism_properties[0].append(new_graph_index)
-                isomorphism_properties[1] = automorphism_count
-        if len(isomorphism_properties[0]) > 1:
+        if len(isomorphism_properties[0]) > 0:
             all_isomorphisms.append(isomorphism_properties)
             for proved_isomorphism in isomorphism_properties[0]:
                 if proved_isomorphism != index:
@@ -80,11 +80,10 @@ def get_first_isomorphism(graph_list):
         # For every graph in a list except the graph that was removed
         for new_graph_index in graph_dict.keys():
             # If their neighbours are the same, then their colors could be combined
-            automorphism_count = find_automorphism(graph, (graph_dict[new_graph_index]))
-            if automorphism_count:
+            if find_automorphism(graph, (graph_dict[new_graph_index])):
                 isomorphism_properties[0].append(new_graph_index)
-                isomorphism_properties[1] = automorphism_count
-        if len(isomorphism_properties[0]) > 1:
+                isomorphism_properties[1] = "isomorphism"
+        if len(isomorphism_properties[0]) > 0:
             all_isomorphisms.append(isomorphism_properties)
             for proved_isomorphism in isomorphism_properties[0]:
                 if proved_isomorphism != index:
