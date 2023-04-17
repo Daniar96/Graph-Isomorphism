@@ -4,26 +4,24 @@ from partition_refinement import *
 from DDL import *
 from time import *
 
-graph_list = []
-queue = [0]
-leftover = []
+graph_list = DoublyLinkedList()
+queue = DoublyLinkedList()
+leftover = DoublyLinkedList()
 
 def setup():
     global graph_list
-    graph_path = 'FastPartitionGraphs/threepaths5.gr'
-    graph_list = get_graph_list(graph_path)
-    combined_vertices = []
-    for graph in graph_list:
-        initialize(graph)
-        for v in graph.vertices:
-            combined_vertices.append(v)
-    max_degree = len(combined_vertices)//len(graph_list)
-    print(combined_vertices)
+    graph_path = 'test/FastPartitionGraphs/threepaths160.gr'
+    graph_list = convert_to_dllist(get_graph_list(graph_path))
+    graph = graph_list.get(0)
+    # initialize(graph)
+    combined_vertices = convert_to_dllist(graph.vertices)
+    max_degree = combined_vertices.size()//graph_list.size()
+    # print(combined_vertices)
     return combined_vertices, max_degree
 
-def initialize(graph):
-    for vertice in graph.vertices:
-        vertice.set_color(0)
+# def initialize(graph):
+#     for vertice in graph.vertices:
+#         vertice.set_color(0)
 
 disjoint_graph, max_degree = setup()
 new_colr = 0
@@ -32,7 +30,7 @@ def partition():
     partition = {}
     for vertex in disjoint_graph:
         if vertex.get_color() not in partition:
-            partition[vertex.get_color()] = [vertex]
+            partition[vertex.get_color()] = convert_to_dllist([vertex])
         else:
             partition[vertex.get_color()].append(vertex)
     return partition
@@ -41,76 +39,52 @@ def partition_graph(graph):
     partition = {}
     for vertex in graph:
         if vertex.get_color() not in partition:
-            partition[vertex.get_color()] = [vertex]
+            partition[vertex.get_color()] = convert_to_dllist([vertex])
         else:
             partition[vertex.get_color()].append(vertex)
     return partition
 
+
 def new_color():
     return new_colr+1
-def find_Nx(Ci, i):
-    Nx = []
-    for vertex in list(Ci.values()):
-        for v in vertex:
-            if len(v.neighbours) == i:
-                Nx.append(v)
+
+def find_Nx(partition, i):
+    Nx = DoublyLinkedList()
+    vertices = [v for vertex in partition.values() for v in vertex if len(v.neighbours) == i]
+    for vertex in vertices:
+        Nx.append(vertex)
     return Nx
-
-
-def refine(C, x): # x - degree, aka delta function; C - partition by colors
-    global new_colr
+def refine(C, x):
     global leftover
+    global queue
 
     L = set()  # store unique colors
     A = {}  # states with color i in Ci
-    global queue
 
     # Split color classes
     Nx = find_Nx(C, x)
 
-    if len(Nx) == 0:
-        # new_colr=new_color()
-        return C, False
-
-    print('NX', Nx)
-    print('queue', queue)
-    print('degree: ', x)
+    if Nx.size() == 0:
+        return C
 
     # Compute L and A
-    # Works correctly!
-    for key, value in C.items():
-        A[key] = 0
-        for q1 in Nx:
-            if q1 in C[key]:
-                L.add(key)
-                A[key] += 1
-    print('left', leftover)
-    L = list(filter(lambda k: k not in leftover, L))
+    for vertex in Nx:
+        color = vertex.get_color()
+        if color not in L:
+            L.add(color)
+        A[color] = A.get(color, 0) + 1
+    L -= set(leftover)
 
-
-    print('l',L)
-    print('A', A)
-    print('C', C)
-    # split color class into 2 new classes
-    for i in L: # i dont need L
-        print('len:', len(C[i]))
-        print('color', i)
-        if A[i] < len(C[i]):
-            new_colr = new_color()
-            C[new_colr] = []
-            print('new', new_colr)
-            for q in Nx:
-                for key, value in list(C.items()):
-                    if q in list(value):
-                        C[key].remove(q)
+    # Split color class into 2 new classes
+    for i in L:
+        if A[i] < C[i].size():
+            new_colr = len(C)
+            C[new_colr] = DoublyLinkedList()
+            for q in set(C[i]) & set(Nx):
+                C[i].delete_value(q)
+                q.set_color(new_colr)
                 C[new_colr].append(q)
-            # for key, value in list(C.items()):
-            #     for q in value:
-            #         if (q in Nx): # create new color class with vertices from Nx!
-            #             C[new_colr].append(q)
-            #             C[key].remove(q)
-            print(len(C[i]), len(C[new_colr]))
-            if len(C[new_colr]) == 0:
+            if C[new_colr].size() == 0:
                 del C[new_colr]
                 continue
 
@@ -119,55 +93,29 @@ def refine(C, x): # x - degree, aka delta function; C - partition by colors
             else:
                 queue.append(min(i, new_colr))
 
-        # Update colors of states
-        for key, value in C.items():
-            for v in value:
-                v.set_color(key)
-    C = partition()
-    print(C)
-    print('queueuu', queue)
+    return C
 
-    return C, True
 
 def refines(C):
     global leftover
-    #TODO: add loop over queue until its empty
-    while queue:
+    while True:
         for i in range(1, max_degree+1):
-            new_partition, check = refine(C, i)
-            #TODO: check whether partition terminates correctly
-           # check whether the partition is stable such that degree existed in Nx
-           #  if C == new_partition and check == True:
-           #      print(C)
-           #      return C
-           #  else:
+            new_partition = refine(C, i)
             C = new_partition
-        t = queue.pop(0)
+        t = queue.delete_start()
+        if t is None:
+            break
         leftover.append(t)
-        print('leftover', leftover)
-        print('pop', queue)
-
-    print(C)
     return C
 
-# def split():
-#     for i in range(len(graph_list)):
-#         print(f'[{i}', end='')
-#         for j in range(i + 1, len(graph_list)):
-#             if partition_graph(graph_list[i]) == partition_graph(graph_list[j]):
-#                 print(j, end=' ')
-#         print(']')
 
 def split():
-    copy_dict={}
-    print('split')
-    for i in range(len(graph_list)):
-        # print(partition_graph(graph_list[i]))
-        dict_p = partition_graph(graph_list[i])
-        for key, value in list(dict_p.items()):
-            copy_dict[key] = len(list(value))
+    copy_dict = {}
+    for graph in graph_list:
+        partitions = partition_graph(graph)
+        copy_dict.update({key: len(list(value)) for key, value in partitions.items()})
         print(copy_dict)
-        copy_dict.clear()
+    copy_dict.clear()
 
 start = time()
 C = partition()

@@ -70,7 +70,7 @@ def print_isomorphisms(isomorphisms):
 if __name__ == '__main__':
     try:
         while True:
-            graph_path = input("Type a path to a graph file: ")
+            graph_path = 'test/FastPartitionGraphs/threepaths5120.gr'
             start = time.time()
 
             graph = get_graph_list(graph_path)
