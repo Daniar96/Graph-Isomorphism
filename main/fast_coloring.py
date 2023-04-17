@@ -1,6 +1,6 @@
 from collections import Counter
 
-from main.DDL_short import DoublyLinkedList_Short
+from main.DDL import DoublyLinkedList
 
 
 class Coloring_Fast(object):
@@ -18,7 +18,7 @@ class Coloring_Fast(object):
         self.vertices = vertices
         # Create a new dictionary to hold vertices mapped to colours(#neigbours)
         self.color_to_vertex = dict()
-        self.ref_queue = DoublyLinkedList_Short()
+        self.ref_queue = DoublyLinkedList()
         self.iter = 0
 
     def __len__(self):
@@ -43,7 +43,7 @@ class Coloring_Fast(object):
             # If there is no color in the dictionary yet
             if neighbours_num not in self.color_to_vertex.keys():
                 # Add a list with a vertex
-                self.color_to_vertex[neighbours_num] = [DoublyLinkedList_Short(), True]
+                self.color_to_vertex[neighbours_num] = [DoublyLinkedList(), True]
                 self.ref_queue.append(vertex.color)
             # If there is already this color in the dictionary
             # Add a vertex to list of vertices
@@ -81,7 +81,7 @@ class Coloring_Fast(object):
             if not L[color] < Ci.size():
                 continue
             # If so, choose a new color l, and update Queue by adding i or l.
-            leftover = DoublyLinkedList_Short()
+            leftover = DoublyLinkedList()
             color_classes = 2
             split_classes = {}
             neighbours_in_C_num = int()
@@ -91,7 +91,7 @@ class Coloring_Fast(object):
                     if color_classes == 0:
                         leftover.append(vertex)
                     color_classes -= 1
-                    split_classes[neighbours_in_C_num] = DoublyLinkedList_Short()
+                    split_classes[neighbours_in_C_num] = DoublyLinkedList()
                     split_classes[neighbours_in_C_num].append(vertex)
                 else:
                     split_classes[neighbours_in_C_num].append(vertex)
@@ -114,7 +114,7 @@ class Coloring_Fast(object):
             self.change_color(color_l, l_list, True)
 
     def change_color(self, new_color, vertex_list, in_queue):
-        new_partition = DoublyLinkedList_Short()
+        new_partition = DoublyLinkedList()
         self.color_to_vertex[new_color] = [new_partition, in_queue]
         for vertex in vertex_list:
             vertex.partition.delete_value(vertex)

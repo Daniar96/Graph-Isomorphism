@@ -8,6 +8,7 @@ Module 7 programming project.
 ### To run basic instances
 - Run automorphism_counter.py 
 - Provide a path either to a file or a directory of a graph
+- If a path to directory was provided, the directory will be scanned, files with .grl and .gr will be processed 
 
 ### To run fast part refinement
 - Run fastPartitionRefinement.py

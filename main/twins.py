@@ -1,11 +1,7 @@
-from graph import *
-from coloring import *
 from graph_io import *
 
 
-def count_twins(graph):  # it prints true twins and false twins. But about counter I am completely not sure.
-                            # for the example below that is just a square it counts 4 automorphisms. But there 6 actually
-                            # if we don't consider double-counting.
+def count_twins(graph):
     vertices = graph.vertices
     twins_multiplier = 0
     counter = 0
@@ -29,12 +25,6 @@ def count_twins(graph):  # it prints true twins and false twins. But about count
                 known_twins.append(vertex2)
                 twins.append(vertex2.label)
 
-            #     if vertex1.is_adjacent(vertex2):  # True twins
-            #         print(vertex1.label, "True twins: ", vertex2.label)
-            #         true_twins.append(vertex2.label)
-            # if neighbours1 == neighbours2 and not vertex1.is_adjacent(vertex2):  # False twins
-            #     print(vertex1.label, " False twins: ", vertex2.label)
-            #     false_twins.append(vertex2.label)
         if counter > 0:
             set_twins.append(twins)
             for i in range(1, counter + 2):
@@ -42,8 +32,7 @@ def count_twins(graph):  # it prints true twins and false twins. But about count
             twins_multiplier = twins_multiplier + fact
             fact = 1
         counter = 0
-    print(set_twins)
-    return twins_multiplier
+    return set_twins
 
 
 g = Graph(False, 7)
